@@ -75,7 +75,9 @@ def read_gtf(gtf)
     bin_end = bin_start + $bin_length
     genes[line[chr]][[bin_start,bin_end]] ||= {}
     genes[line[chr]][[bin_start,bin_end]][[line[start].to_i,line[stop].to_i]] = line[ids]
+    puts "#{line[chr]}:#{line[start]}-#{line[stop]}"
   end
+  exit
   genes
 end
 
