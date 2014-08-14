@@ -2,6 +2,7 @@
 require 'optparse'
 require 'logger'
 
+
 $logger = Logger.new(STDERR)
 $genes = []
 $bin_length = 400000
@@ -75,7 +76,6 @@ def read_gtf(gtf)
     bin_end = bin_start + $bin_length
     genes[line[chr]][[bin_start,bin_end]] ||= {}
     genes[line[chr]][[bin_start,bin_end]][[line[start].to_i,line[stop].to_i]] = line[ids]
-    #puts "#{line[chr]}:#{line[start]}-#{line[stop]}"
   end
   genes
 end
@@ -115,44 +115,34 @@ def read_sam(sam,out_file)
     next unless $genes[line[chr]]
     next if pair[cigar] == "*"
     next if line[cigar] == "*"
+    bins = []
     bin_start = (line[pos].to_i / $bin_length) * $bin_length
     bin_end = bin_start + $bin_length
-    bin_start2 = (line[pos].to_i / ($bin_length)) * ($bin_length) - $bin_length
-    bin_end2 = bin_start2 + $bin_length
-    bin_start5 = (line[pos].to_i / ($bin_length)) * ($bin_length) + $bin_length
-    bin_end5 = bin_start5 + $bin_length
-    bin_start3 = (pair[pos].to_i / ($bin_length)) * ($bin_length)
-    bin_end3 = bin_start3 + $bin_length
-    bin_start4 = (pair[pos].to_i / ($bin_length)) * ($bin_length) - $bin_length
-    bin_end4 = bin_start4 + $bin_length
-    bin_start6 = (pair[pos].to_i / ($bin_length)) * ($bin_length) + $bin_length
-    bin_end6 = bin_start6 + $bin_length
+    #puts bin_start
+    #puts bin_end
+    bins |= [[bin_start,bin_end]]
+    bin_start = (line[pos].to_i / ($bin_length)) * ($bin_length) - $bin_length
+    bin_end = bin_start + $bin_length
+    bins |= [[bin_start,bin_end]]
+    bin_start = (line[pos].to_i / ($bin_length)) * ($bin_length) + $bin_length
+    bin_end = bin_start + $bin_length
+    bins |= [[bin_start,bin_end]]
+    bin_start = (pair[pos].to_i / ($bin_length)) * ($bin_length)
+    bin_end = bin_start + $bin_length
+    bins |= [[bin_start,bin_end]]
+    bin_start = (pair[pos].to_i / ($bin_length)) * ($bin_length) - $bin_length
+    bin_end = bin_start + $bin_length
+    bins |= [[bin_start,bin_end]]
+    bin_start = (pair[pos].to_i / ($bin_length)) * ($bin_length) + $bin_length
+    bin_end = bin_start + $bin_length
+    bins |= [[bin_start,bin_end]]
 
+    selected_genes = {}
+    bins.each do |bin|
+      genes = $genes[line[chr]][[bin[0],bin[1]]]
+      selected_genes = selected_genes.merge(genes) if genes
+    end
 
-    selected_genes1 = $genes[line[chr]][[bin_start,bin_end]]
-    selected_genes2 = $genes[line[chr]][[bin_start2,bin_end2]]
-    selected_genes3 = $genes[line[chr]][[bin_start3,bin_end3]]
-    selected_genes4 = $genes[line[chr]][[bin_start4,bin_end4]]
-    selected_genes5 = $genes[line[chr]][[bin_start5,bin_end5]]
-    selected_genes6 = $genes[line[chr]][[bin_start6,bin_end6]]
-
-    selected_genes1 ||= {}
-    selected_genes2 ||= {}
-    selected_genes3 ||= {}
-    selected_genes4 ||= {}
-    selected_genes5 ||= {}
-    selected_genes6 ||= {}
-    #puts selected_genes1
-    #puts selected_genes2
-
-    selected_genes = selected_genes1.merge(selected_genes2)
-    selected_genes = selected_genes.merge(selected_genes3)
-    selected_genes = selected_genes.merge(selected_genes4)
-    selected_genes = selected_genes.merge(selected_genes5)
-    selected_genes = selected_genes.merge(selected_genes6)
-    #selected_genes34 = selected_genes3.merge(selected_genes4)
-    #selected_genes = selected_genes12.merge(selected_genes34)
-    #puts selected_genes.keys
     next if selected_genes.empty?
     fragments_line = make_fragment(line[pos].to_i,line[cigar])
     fragments_pair = make_fragment(pair[pos].to_i,pair[cigar])
