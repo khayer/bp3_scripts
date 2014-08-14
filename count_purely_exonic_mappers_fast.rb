@@ -5,7 +5,7 @@ require 'logger'
 
 $logger = Logger.new(STDERR)
 $genes = []
-$bin_length = 400000
+$bin_length = 300000
 
 # Initialize logger
 def setup_logger(loglevel)
