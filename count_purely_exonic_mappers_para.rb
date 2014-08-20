@@ -122,14 +122,14 @@ def read_gtf(gtf)
 
   File.open(gtf).each do |line|
     line.chomp!
-    next unless line =~ /^\w/ 
+    next unless line =~ /^\w/
     line = line.split("\t")
     #chr1  mm9_refGene start_codon 134212807 134212809 0.000000  + . gene_id "NM_028778"; transcript_id "NM_028778";
     next unless line[feature] == "exon"
     bin_start = (line[start].to_i / $bin_length) * $bin_length
     bin_end = bin_start + $bin_length
     line[chr] = "chr" + line[chr] unless line[chr] =~ /^chr/
-    next line[chr] == "chrM"
+    next if line[chr] == "chrM"
     genes[line[chr]] ||= {}
     genes[line[chr]][[bin_start,bin_end]] ||= {}
     genes[line[chr]][[bin_start,bin_end]][[line[start].to_i,line[stop].to_i]] = line[ids]
@@ -187,8 +187,8 @@ def read_sam(sam,out_file)
 
     results = Parallel.map(process_queue,:in_processes=>4) do |e|
       line = e[0]
-      pair = e[1]      
-      out = process(line,pair) 
+      pair = e[1]
+      out = process(line,pair)
     end
     process_queue = []
     # "RESULTS #{results.join("NINA")}"
@@ -255,7 +255,7 @@ end
 
 def read_exclude_list(exclude_file)
   exclude = []
-  File.open(exclude_file).each do |line|  
+  File.open(exclude_file).each do |line|
     line.chomp!
     exclude << line unless exclude.include?(line)
   end
