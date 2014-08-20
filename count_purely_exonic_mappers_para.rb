@@ -129,6 +129,7 @@ def read_gtf(gtf)
     bin_start = (line[start].to_i / $bin_length) * $bin_length
     bin_end = bin_start + $bin_length
     line[chr] = "chr" + line[chr] unless line[chr] =~ /^chr/
+    next line[chr] == "chrM"
     genes[line[chr]] ||= {}
     genes[line[chr]][[bin_start,bin_end]] ||= {}
     genes[line[chr]][[bin_start,bin_end]][[line[start].to_i,line[stop].to_i]] = line[ids]
