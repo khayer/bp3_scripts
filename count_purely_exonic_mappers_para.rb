@@ -7,7 +7,7 @@ require 'parallel'
 $logger = Logger.new(STDERR)
 $genes = []
 $bin_length = 300000
-$exclude = []
+$exclude = ""
 
 # Initialize logger
 def setup_logger(loglevel)
@@ -178,6 +178,7 @@ def read_sam(sam,out_file)
     go_on = false if pre_pair[cigar] == "*"
     #puts go_on
     go_on = false if pre_line[cigar] == "*"
+    go_on = false if $exclude.include?(pre_line[name])
 
     process_queue << [pre_line,pre_pair] if go_on
     #puts process_queue.join(":")
@@ -188,11 +189,7 @@ def read_sam(sam,out_file)
     results = Parallel.map(process_queue,:in_processes=>4) do |e|
       line = e[0]
       pair = e[1]
-      res = "true"
-      res = `grep -w #{line[name]} #{$exclude}` if $exclude
-      out = nil
-      out = process(line,pair) if res.empty?
-      out
+      out = process(line,pair)
     end
     process_queue = []
     # "RESULTS #{results.join("NINA")}"
@@ -273,7 +270,7 @@ def run(argv)
   $logger.debug(argv)
 
   $genes = read_gtf(ARGV[1])
-  $exclude = options[:exclude]
+  $exclude = File.read(options[:exclude]) if options[:exclude]
   #$logger.debug("Excluding: " + $exclude.join(":"))
   out_file = File.open(options[:out_file],'w')
   counts = read_sam(ARGV[0],out_file)
