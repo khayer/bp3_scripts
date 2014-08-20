@@ -178,7 +178,7 @@ def read_sam(sam,out_file)
     go_on = false if pre_pair[cigar] == "*"
     #puts go_on
     go_on = false if pre_line[cigar] == "*"
-    go_on = false if $exclude.include?(pre_line[name])
+    go_on = false if $exclude.include?("#{pre_line[name]}\n")
 
     process_queue << [pre_line,pre_pair] if go_on
     #puts process_queue.join(":")
