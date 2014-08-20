@@ -178,7 +178,7 @@ def read_sam(sam,out_file)
     go_on = false if pre_pair[cigar] == "*"
     #puts go_on
     go_on = false if pre_line[cigar] == "*"
-    go_on = false if $exclude.include?("#{pre_line[name]}\n")
+
 
     process_queue << [pre_line,pre_pair] if go_on
     #puts process_queue.join(":")
@@ -189,7 +189,9 @@ def read_sam(sam,out_file)
     results = Parallel.map(process_queue,:in_processes=>4) do |e|
       line = e[0]
       pair = e[1]
-      out = process(line,pair)
+      out = nil
+      out = process(line,pair) if !$exclude.include?("#{line[name]}\n")
+      out
     end
     process_queue = []
     # "RESULTS #{results.join("NINA")}"
