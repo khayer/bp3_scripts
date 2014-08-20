@@ -198,13 +198,11 @@ def read_sam(sam,out_file)
     process_queue << [pre_line,pre_pair]
     #puts process_queue.join(":")
     #puts "process_queue: #{process_queue.size}"
-    next unless (process_queue.size == 100000 || sam_handle.eof?)
+    next unless (process_queue.size == 5000 || sam_handle.eof?)
     #puts "TIGER"
 
     results = para(process_queue)
     process_queue = []
-
-    results.compact!
     # "RESULTS #{results.join("NINA")}"
     results.each do |seq_name|
 
