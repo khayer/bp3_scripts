@@ -195,13 +195,27 @@ def read_sam(sam,out_file)
     #puts pair
     pre_pair = pre_pair.split("\t")
     pre_line = pre_line.split("\t")
-    process_queue << [pre_line,pre_pair]
+    go_on = true
+    go_on = false unless pre_line.join("\t") =~ /NH\:i\:1\s/
+    #puts line[name]
+    go_on = false unless pre_line[chr] = pre_pair[chr]
+    #puts go_on
+    go_on = false unless $genes[pre_line[chr]]
+    #puts go_on
+    go_on = false if pre_pair[cigar] == "*"
+    #puts go_on
+    go_on = false if pre_line[cigar] == "*"
+    process_queue << [pre_line,pre_pair] if go_on
     #puts process_queue.join(":")
     #puts "process_queue: #{process_queue.size}"
     next unless (process_queue.size == 5000 || sam_handle.eof?)
     #puts "TIGER"
 
-    results = para(process_queue)
+    results = Parallel.map(process_queue,:in_processes=>4) do |e|
+      line = e[0]
+      pair = e[1]      
+      out = process(line,pair) 
+    end
     process_queue = []
     # "RESULTS #{results.join("NINA")}"
     results.each do |seq_name|
