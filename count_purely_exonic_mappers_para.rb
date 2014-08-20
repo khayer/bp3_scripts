@@ -178,7 +178,7 @@ def read_sam(sam,out_file)
     go_on = false if pre_pair[cigar] == "*"
     #puts go_on
     go_on = false if pre_line[cigar] == "*"
-    go_on = false if $exclude.include?(pre_line[name])
+
     process_queue << [pre_line,pre_pair] if go_on
     #puts process_queue.join(":")
     #puts "process_queue: #{process_queue.size}"
@@ -188,7 +188,11 @@ def read_sam(sam,out_file)
     results = Parallel.map(process_queue,:in_processes=>4) do |e|
       line = e[0]
       pair = e[1]
-      out = process(line,pair)
+      res = "true"
+      res = `grep -w #{line[name]} #{$exclude}` if $exclude
+      out = nil
+      out = process(line,pair) if res.empty?
+      out
     end
     process_queue = []
     # "RESULTS #{results.join("NINA")}"
@@ -253,14 +257,14 @@ def make_fragment(pos,cigar)
   fragments
 end
 
-def read_exclude_list(exclude_file)
-  exclude = []
-  File.open(exclude_file).each do |line|
-    line.chomp!
-    exclude << line unless exclude.include?(line)
-  end
-  exclude
-end
+#def read_exclude_list(exclude_file)
+#  exclude = []
+#  File.open(exclude_file).each do |line|
+#    line.chomp!
+#    exclude << line unless exclude.include?(line)
+#  end
+#  exclude
+#end
 
 def run(argv)
   options = setup_options(argv)
@@ -269,8 +273,8 @@ def run(argv)
   $logger.debug(argv)
 
   $genes = read_gtf(ARGV[1])
-  $exclude = read_exclude_list(options[:exclude]) if options[:exclude]
-  $logger.debug("Excluding: " + $exclude.join(":"))
+  $exclude = options[:exclude]
+  #$logger.debug("Excluding: " + $exclude.join(":"))
   out_file = File.open(options[:out_file],'w')
   counts = read_sam(ARGV[0],out_file)
   out_file.puts "SUM: #{counts[0]}"
