@@ -7,6 +7,7 @@ require 'parallel'
 $logger = Logger.new(STDERR)
 $genes = []
 $bin_length = 300000
+$exclude = []
 
 # Initialize logger
 def setup_logger(loglevel)
@@ -23,7 +24,7 @@ def setup_logger(loglevel)
 end
 
 def setup_options(args)
-  options = {:single_end=>false, :out_file=>"counts.txt"}
+  options = {:single_end=>false, :out_file=>"counts.txt", :exclude=>nil}
 
   opt_parser = OptionParser.new do |opts|
     opts.banner = "Usage: #{$0} [options] file.sam file.gtf"
@@ -32,6 +33,12 @@ def setup_options(args)
       :REQUIRED,String,
       "File for the output, Default: counts.txt") do |a|
       options[:out_file] = a
+    end
+
+    opts.on("-e", "--exclude [EXCLUDE_FILE]",
+      :REQUIRED,String,
+      "File with sequence names to exclude.") do |a|
+      options[:exclude] = a
     end
 
     opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
@@ -115,53 +122,18 @@ def read_gtf(gtf)
 
   File.open(gtf).each do |line|
     line.chomp!
+    next unless line =~ /^\w/ 
     line = line.split("\t")
     #chr1  mm9_refGene start_codon 134212807 134212809 0.000000  + . gene_id "NM_028778"; transcript_id "NM_028778";
     next unless line[feature] == "exon"
-    genes[line[chr]] ||= {}
     bin_start = (line[start].to_i / $bin_length) * $bin_length
     bin_end = bin_start + $bin_length
+    line[chr] = "chr" + line[chr] unless line[chr] =~ /^chr/
+    genes[line[chr]] ||= {}
     genes[line[chr]][[bin_start,bin_end]] ||= {}
     genes[line[chr]][[bin_start,bin_end]][[line[start].to_i,line[stop].to_i]] = line[ids]
   end
   genes
-end
-
-def para(process_queue)
-  name = 0
-  bin = 1
-  chr = 2
-  pos = 3
-  cigar = 5
-  tags = 11...-1
-
-  results = Parallel.map(process_queue,:in_processes=>4) do |e|
-    line = e[0]
-    pair = e[1]
-    go_on = true
-    go_on = false unless line.join("\t") =~ /NH\:i\:1\s/
-    #puts line[name]
-    go_on = false unless line[chr] = pair[chr]
-    #puts go_on
-    go_on = false unless $genes[line[chr]]
-    #puts go_on
-    go_on = false if pair[cigar] == "*"
-    #puts go_on
-    go_on = false if line[cigar] == "*"
-    #puts go_on
-    #puts "CUT HERE"
-    if go_on
-      #puts "GOT HERE"
-      #puts "LINE: #{line.join("@@")}"
-      #puts "PAIR: #{pair.join("@@")}"
-      out = process(line,pair)
-    else
-      out = nil
-    end
-    out
-  end
-
-  results
 end
 
 def read_sam(sam,out_file)
@@ -205,6 +177,7 @@ def read_sam(sam,out_file)
     go_on = false if pre_pair[cigar] == "*"
     #puts go_on
     go_on = false if pre_line[cigar] == "*"
+    go_on = false if $exclude.include?(pre_line[name])
     process_queue << [pre_line,pre_pair] if go_on
     #puts process_queue.join(":")
     #puts "process_queue: #{process_queue.size}"
@@ -279,6 +252,15 @@ def make_fragment(pos,cigar)
   fragments
 end
 
+def read_exclude_list(exclude_file)
+  exclude = []
+  File.open(exclude_file).each do |line|  
+    line.chomp!
+    exclude << line unless exclude.include?(line)
+  end
+  exclude
+end
+
 def run(argv)
   options = setup_options(argv)
   setup_logger(options[:log_level])
@@ -286,6 +268,8 @@ def run(argv)
   $logger.debug(argv)
 
   $genes = read_gtf(ARGV[1])
+  $exclude = read_exclude_list(options[:exclude]) if options[:exclude]
+  $logger.debug("Excluding: " + $exclude.join(":"))
   out_file = File.open(options[:out_file],'w')
   counts = read_sam(ARGV[0],out_file)
   out_file.puts "SUM: #{counts[0]}"
