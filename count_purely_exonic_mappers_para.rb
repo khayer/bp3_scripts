@@ -135,7 +135,7 @@ def para(process_queue)
   cigar = 5
   tags = 11...-1
 
-  results = Parallel.map(process_queue,:in_threads=>4) do |e|
+  results = Parallel.map(process_queue,:in_processes=>4) do |e|
     line = e[0]
     pair = e[1]
     go_on = true
@@ -211,6 +211,7 @@ def read_sam(sam,out_file)
       if seq_name
         #puts seq_name
         out_file.puts seq_name
+        out_file.flush
         counts[0] += 1
       end
     end

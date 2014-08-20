@@ -1,8 +1,4 @@
 seq.6707
-seq.6707
-seq.6707
-seq.6707
-seq.6707
 seq.5
 seq.7
 SUM: 3
