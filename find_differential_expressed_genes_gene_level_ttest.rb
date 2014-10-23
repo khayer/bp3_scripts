@@ -47,23 +47,36 @@ spliceforms_num = {}
 File.open(spliceforms).each { |line| spliceforms_num[line.chomp.split("\t")[2]] = line.chomp.split("\t")[3] }
 #puts spliceforms_num
 
-cutoff = 0.01
+cutoff = 0.05
 header = %w{feature_type feature_id  chromosome  start end mean_celecoxib_il1b mean_control_il1b q-value fold  symbol  description ucsc_id}
 
 genes = []
 out = []
 
-puts "ensembl\tsymbol\tfold_change\tcov_g1\tcov_g2\tsd_g1\tsd_g2\tmean_g1\tmean_g2"
-File.open(list_of_diff_genes).each do |line|
-  line.chomp!
-  line = line.split("\t")
-  next unless line[header.index("feature_type")] == "gene"
-  next unless line[header.index("q-value")].to_f < cutoff
-  # IS IT ONLY ONE SPLICEFORM?
-  #STDERR.puts line[header.index("symbol")]
-  if spliceforms_num[names[line[header.index("symbol")]]]  == "1"
+puts "ensembl\tsymbol\tfold_change\tcov_g1\tcov_g2\tsd_g1\tsd_g2\tmean_g1\tmean_g2\tP\tQ"
 
-    puts "#{line[header.index("feature_id")]}\t#{line[header.index("symbol")]}\t#{line[header.index("fold")]}\t#{cov[line[header.index("feature_id")]].join("\t")}" unless genes.include?(line[header.index("feature_id")])
-    genes << line[header.index("feature_id")] unless genes.include?(line[header.index("feature_id")])
+CSV.foreach(list_of_diff_genes) do |ps|
+  #puts ps[-1].to_f
+  next unless ps[-1].to_f < cutoff
+  #puts "GOT HERE"
+  #puts ps[0].split(":")[1]
+  #puts names[ps[-3]]
+  if spliceforms_num[names[ps[-3]]]  == "1"
+    fc = (cov[ps[0].split(":")[1]][4]+1)/ (cov[ps[0].split(":")[1]][5]+1)
+    puts "#{ps[0].split(":")[1]}\t#{ps[-3]}\t#{fc}\t#{cov[ps[0].split(":")[1]].join("\t")}\t#{ps[-2]}\t#{ps[-1]}" unless genes.include?(cov[ps[0].split(":")[1]])
+    genes << ps[0].split(":")[1] unless genes.include?(ps[0].split(":")[1])
   end
 end
+#File.open(list_of_diff_genes).each do |line|
+#  line.chomp!
+#  line = line.split("\t")
+#  next unless line[header.index("feature_type")] == "gene"
+#  next unless line[header.index("q-value")].to_f < cutoff
+#  # IS IT ONLY ONE SPLICEFORM?
+#  #STDERR.puts line[header.index("symbol")]
+#  if spliceforms_num[names[line[header.index("symbol")]]]  == "1"
+#
+#    puts "#{line[header.index("feature_id")]}\t#{line[header.index("symbol")]}\t#{line[header.index("fold")]}\t#{cov[line[header.index("feature_id")]].join("\t")}" unless genes.include?(line[header.index("feature_id")])
+#    genes << line[header.index("feature_id")] unless genes.include?(line[header.index("feature_id")])
+#  end
+#end
