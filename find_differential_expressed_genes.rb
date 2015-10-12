@@ -49,8 +49,11 @@ File.open(counts_table).each do |line|
     break if yes
   end
   if yes #genes.include?(line[-2])
-    il1b = line[17..24].inject(0) {|sum, i|  sum + i.to_i }
-    no_il1b = line[41..48].inject(0) {|sum, i|  sum + i.to_i }
+    #il1b = line[17..24].inject(0) {|sum, i|  sum + i.to_i }
+    #no_il1b = line[41..48].inject(0) {|sum, i|  sum + i.to_i }
+
+    il1b = line[1..4].inject(0) {|sum, i|  sum + i.to_i }
+    no_il1b = line[5..8].inject(0) {|sum, i|  sum + i.to_i }
 
     counts[gene_name] ||= [0,0]
     counts[gene_name] = [counts[gene_name][0]+il1b,counts[gene_name][1]+no_il1b]
