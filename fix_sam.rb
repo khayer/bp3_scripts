@@ -108,15 +108,15 @@ def fix_ab(fields,current_name)
 end
 
 def check_hi_tag(fields)
-  ih = -1
+  hi = -1
   return fields << ih unless fields[11]
   fields[11..-1].each do |tag|
     if tag =~ /^HI:/
       tag =~ /(\d+)/
-      ih = $1.to_i
+      hi = $1.to_i
     end
   end
-  fields << ih
+  fields << hi
 end
 
 def rep_line(lines1, lines2)
@@ -146,6 +146,23 @@ def rep_line(lines1, lines2)
     new_line1 << k
   end
   new_line1
+end
+
+def add_NH_tag(fields, num)
+  $logger.debug(fields)
+  $logger.debug(num)
+  found = false
+  fields.each_with_index do |f,i|
+    next unless f =~ /NH:i:/
+    $logger.debug(f)
+    fields[i] = "NH:i:#{num}"
+    found = true
+    break
+  end
+  unless found
+    fields << "NH:i:#{num}"
+  end
+  fields
 end
 
 def fix_lines(lines,current_name)
@@ -199,10 +216,12 @@ def fix_lines(lines,current_name)
   end
   rev_reads.each_with_index do |rev, i|
     fwd = fwd_reads[i]
+    fwd = add_NH_tag(fwd[0...-1], rev_reads.length)
+    rev = add_NH_tag(rev[0...-1], rev_reads.length)
     fwd[0] = fwd[0].sub(/b$/,"a")
     rev[0] = rev[0].sub(/b$/,"a")
-    puts fwd[0...-1].join("\t")
-    puts rev[0...-1].join("\t")
+    puts fwd.join("\t")
+    puts rev.join("\t")
   end
 
 end
