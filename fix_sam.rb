@@ -166,12 +166,12 @@ def add_NH_tag(fields, num)
 end
 
 def add_HI_tag(fields, num)
-  $logger.debug("This is IH tag")
+  $logger.debug("This is HI tag")
   $logger.debug(fields)
   $logger.debug(num)
   found = false
   fields.each_with_index do |f,i|
-    next unless f =~ /IH:i:/
+    next unless f =~ /HI:i:/
     $logger.debug(f)
     fields[i] = "HI:i:#{num}"
     found = true
