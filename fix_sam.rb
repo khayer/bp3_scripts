@@ -165,6 +165,24 @@ def add_NH_tag(fields, num)
   fields
 end
 
+def add_IH_tag(fields, num)
+  $logger.debug("This is IH tag")
+  $logger.debug(fields)
+  $logger.debug(num)
+  found = false
+  fields.each_with_index do |f,i|
+    next unless f =~ /IH:i:/
+    $logger.debug(f)
+    fields[i] = "IH:i:#{num}"
+    found = true
+    break
+  end
+  unless found
+    fields << "IH:i:#{num}"
+  end
+  fields
+end
+
 def fix_lines(lines,current_name)
   #number_of_hits = lines.length/2+1
   #STDERR.puts number_of_hits
@@ -218,6 +236,8 @@ def fix_lines(lines,current_name)
     fwd = fwd_reads[i]
     fwd = add_NH_tag(fwd[0...-1], rev_reads.length)
     rev = add_NH_tag(rev[0...-1], rev_reads.length)
+    fwd = add_IH_tag(fwd,i+1)
+    rev = add_IH_tag(rev,i+1)
     fwd[0] = fwd[0].sub(/b$/,"a")
     rev[0] = rev[0].sub(/b$/,"a")
     puts fwd.join("\t")
