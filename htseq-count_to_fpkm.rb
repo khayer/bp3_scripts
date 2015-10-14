@@ -13,11 +13,6 @@ require 'optparse'
 #
 #   TODO: ADD READ NUMBER
 #
-#   Definition of FPKM:
-#   FPKM stands for Fragments Per Kilobase of transcript
-#   per Million mapped reads. In RNA-Seq, the relative
-#   expression of a transcript is proportional to the number
-#   of cDNA fragments that originate from it.
 #
 ####
 
@@ -152,6 +147,7 @@ def get_num_reads(filename)
   num = 0
   File.open(filename).each do |line|
     line.chomp!
+    next unless line =~ /^ENS/
     num += line.split("\t")[1].to_i
   end
   num
@@ -161,7 +157,12 @@ def write_fpkm(htseqcounts, lengths,num_reads)
   File.open(htseqcounts).each do |line|
     line.chomp!
     fields = line.split("\t")
-    fpkm = (fields[-1].to_f / (lengths[fields[0]].values.max.to_f / 1000.0) / (num_reads / 1000000.0))
+    #   Definition of FPKM:
+    #   FPKM stands for Fragments Per Kilobase of transcript
+    #   per Million mapped reads. In RNA-Seq, the relative
+    #   expression of a transcript is proportional to the number
+    #   of cDNA fragments that originate from it.
+    fpkm = (fields[-1].to_i / (lengths[fields[0]].values.max.to_f / 1000.0) / (num_reads / 1000000.0))
     puts "#{fields[0]}\t#{fpkm}\t#{lengths[fields[0]].values.length}"
   end
 end
