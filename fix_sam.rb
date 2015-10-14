@@ -216,8 +216,8 @@ def fix_lines(lines,current_name)
     end
     i = i+1
   end
-  fwd_reads.sort_by! {|e| [e[-1], e[2], e[3].to_i]}
-  rev_reads.sort_by! {|e| [e[-1], e[2], e[3].to_i]}
+  fwd_reads.sort_by! {|e| [e[-1], e[6], e[3].to_i]}
+  rev_reads.sort_by! {|e| [e[-1], e[6], e[3].to_i]}
   #STDERR.puts rev_reads.length
   #STDERR.puts fwd_reads.length
   #STDIN.gets
