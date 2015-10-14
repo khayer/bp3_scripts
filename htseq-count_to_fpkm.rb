@@ -157,6 +157,7 @@ end
 def write_fpkm(htseqcounts, lengths,num_reads)
   File.open(htseqcounts).each do |line|
     line.chomp!
+    next unless line =~ /^ENS/
     fields = line.split("\t")
     #   Definition of FPKM:
     #   FPKM stands for Fragments Per Kilobase of transcript
