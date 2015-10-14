@@ -163,7 +163,7 @@ def write_fpkm(htseqcounts, lengths,num_reads)
     #   per Million mapped reads. In RNA-Seq, the relative
     #   expression of a transcript is proportional to the number
     #   of cDNA fragments that originate from it.
-    fpkm = (fields[-1].to_i / (lengths[fields[0]].values.max.to_f / 1000.0) / (num_reads / 1000000.0))
+    fpkm = (fields[-1].to_i / (lengths[fields[0]].values.max.to_f / 1000.0) / (num_reads / 1000000.0)).round(4)
     puts "#{fields[0]}\t#{fpkm}\t#{lengths[fields[0]].values.length}"
   end
 end
