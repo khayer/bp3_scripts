@@ -1,5 +1,6 @@
 require 'logger'
-require './logging'
+path = File.expand_path(File.dirname(__FILE__))
+require "#{path}/logging"
 include Logging
 require 'optparse'
 
