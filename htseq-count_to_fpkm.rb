@@ -8,15 +8,15 @@ require 'optparse'
 #   Turns htseq-counts (gene-level) output to FPKM output
 #   in: htseq-counts gtf-file
 #   out: FPKM values for each gene
-#   Note: Length is taken from gtf, where only 
+#   Note: Length is taken from gtf, where only
 #   longest isoform is counted (would average be better?)
 #
 #   TODO: ADD READ NUMBER
 #
 #   Definition of FPKM:
-#   FPKM stands for Fragments Per Kilobase of transcript 
-#   per Million mapped reads. In RNA-Seq, the relative 
-#   expression of a transcript is proportional to the number 
+#   FPKM stands for Fragments Per Kilobase of transcript
+#   per Million mapped reads. In RNA-Seq, the relative
+#   expression of a transcript is proportional to the number
 #   of cDNA fragments that originate from it.
 #
 ####
@@ -41,7 +41,7 @@ end
 
 def setup_options(args)
   options = {
-    :out_file =>  "counts.txt", 
+    :out_file =>  "counts.txt",
     :loglevel => "error",
     :debug => false
   }
@@ -161,15 +161,15 @@ def write_fpkm(htseqcounts, lengths,num_reads)
   File.open(htseqcounts).each do |line|
     line.chomp!
     fields = line.split("\t")
-    fpkm = (fields[-1].to_f / (lengths[fields[0]].values.max.to_f / 1000.0) / (num_reads / 1000000.0) 
-      puts "#{fields[0]}\t#{fpkm}"
+    fpkm = (fields[-1].to_f / (lengths[fields[0]].values.max.to_f / 1000.0) / (num_reads / 1000000.0))
+    puts "#{fields[0]}\t#{fpkm}\t#{lengths[fields[0]].values.length}"
   end
 end
 
 def run(argv)
   options = setup_options(argv)
   htseqcounts = argv[0]
-  gtf_file = argv[1]  
+  gtf_file = argv[1]
 
   lengths = read_gtf(gtf_file)
   $logger.debug(lengths)
