@@ -19,7 +19,7 @@ first = true
 ARGV[0..-1].each do |arg|
   info = []
   arg =~ /_(\d*)./
-  info << $1
+  info << "S#{$1}"
   File.open(arg).each do |line|
     line.chomp!
     fields = line.split("\t")
