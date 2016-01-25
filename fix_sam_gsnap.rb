@@ -51,7 +51,7 @@ def setup_options(args)
   }
 
   opt_parser = OptionParser.new do |opts|
-    opts.banner = "\nUsage: ruby add_num_iso.rb [options]  txt_file gtf_file"
+    opts.banner = "\nUsage: ruby add_num_iso.rb [options] txt_file gtf_file"
     opts.separator ""
     opts.separator "txt_file: output of PORT"
     opts.separator "gtf_file: maybe from UCSC; needs to be the same as the one used for prev. step"
